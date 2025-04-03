@@ -1,0 +1,32 @@
+# The information of all services
+services:
+  # The first service
+  app:                                        # The service name
+    container_name: name                      # Use to change the service name
+    build:
+      context: .                              # The directory contains Dockerfile (. is current directory)
+      dockerfile: Dockerfile                  # The name of Dockerfile file
+    ports:                                    
+      - 3000:3000                             # Mapping the port 3000 of host to port 3000 of local container
+    restart: always                           # Restart container when it fails
+    healthcheck:                              # Use to check the status of container
+      # A test command is used to check the status of the container
+      # The shell is used to check, the below command use the CMD shell
+      # The next command is a command used to check status of the container, the below command use curl to check the status HTTP of the server
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health-check"] 
+      interval: 30s                           # This is the time between testing, we set 30 seconds will recheck
+      retries: 3                              # The number of retries when the previous test is fail
+      start_period: 10s                       # The waiting time that Docker will wait to restart container
+      timeout: 5s                             # The maximum time that Docker waits to recieve a response from previous test to evaluate this as a failure
+    networks:
+      - webnet                                # Use local network
+
+  # The second service
+  nginx:                                      # The service name
+    image: nginx:1.27.4                       # The image is pulled from Docker Hub 
+    ports:      
+      - 80:80                                 # Mapping port
+
+networks:                                     # Create a local network (Containers in the same local network can communicate with each other)
+  webnet:                                     # The name of local network
+    driver: bridge                            # The driver of network (bride use in Docker Compose)
