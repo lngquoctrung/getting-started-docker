@@ -25,7 +25,7 @@ services:
   nginx:                                      # The service name
     image: nginx:1.27.4                       # The image is pulled from Docker Hub 
     ports:      
-      - 80:80                                 # Mapping port
+      - 8`0:80                                 # Mapping port
 
 networks:                                     # Create a local network (Containers in the same local network can communicate with each other)
   webnet:                                     # The name of local network
