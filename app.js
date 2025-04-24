@@ -3,24 +3,35 @@ dotenv.config();
 const express = require("express");
 const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
-const responseHelper = require("./helpers/responseHelper");
+const expressSession = require("express-session");
+const flash = require("express-flash")
 const connectDB = require("./config/database");
+const productMiddleware = require("./middlewares/productMiddlewares");
 
 const app = express();
 app.set("view engine", "ejs");
 app.use(cookieParser());
+app.use(expressSession({
+    secret: process.env.SESSION_KEY,
+    resave: false,
+    saveUninitialized: false,
+}));
+app.use(flash());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.get("/health-check", (req, res) => {
-    res.json(responseHelper.success(
-        200,
-        "Server is running"
-    ));
+    res.json({
+        status: 200,
+        statusText: "OK",
+        message: "Server is running"
+    });
 });
 
-app.get("/", (req, res) => {
-    res.render("index");
+app.get("/", productMiddleware.getAllProducts, (req, res) => {
+    res.render("index", {
+        products: res.locals.products
+    });
 });
 
 app.get("/login", (req, res) => {
@@ -37,7 +48,11 @@ app.get("/add", (req, res) => {
 
 app.get("/products/:id", (req, res) => {
     res.render("products");
-})
+});
+
+app.use((req, res) => {
+    res.render("404");
+});
 
 app.listen(process.env.PORT, process.env.HOST, async () => {
     console.clear();
