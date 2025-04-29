@@ -2,7 +2,7 @@ const { body } = require('express-validator');
 
 module.exports = {
     register: [
-        body('useName')
+        body('username')
             .trim()
             .notEmpty()
             .withMessage( 'Please enter a username'),
@@ -18,16 +18,16 @@ module.exports = {
             .withMessage( 'Please enter a password')
             .isLength({ min: 6 })
             .withMessage( 'Password must be at least 6 characters long'),
-        body('confirmPassword')
-        .trim()
-        .notEmpty()
-        .withMessage( 'Please confirm your password')
-        .custom((value, { req }) => {
-            if (value !== req.body.password) {
-                throw new Error('Passwords do not match');
-            }
-            return true;
-        })
+        body('cfmPassword')
+            .trim()
+            .notEmpty()
+            .withMessage( 'Please confirm your password')
+            .custom((value, { req }) => {
+                if (value !== req.body.password) {
+                    throw new Error('Passwords do not match');
+                }
+                return true;
+            })
     ],
     login: [
         body('email')
@@ -52,16 +52,20 @@ module.exports = {
             .trim()
             .notEmpty()
             .withMessage( 'Please enter a product price')
-                .custom((value) => {
-                    if(!value.match(/%d+\.%d+/))
-                        throw new Error('Please enter a valid price');
-                    return true;
-                }),
+            .custom((value) => {
+                if(!/\d+\.?\d*/.test(value))
+                    throw new Error('Please enter a valid price');
+                return true;
+            }),
         body('productQuantity')
             .trim()
             .notEmpty()
             .withMessage( 'Please enter a product quantity')
             .isNumeric()
-            .withMessage( 'Please enter a valid quantity')
+            .withMessage( 'Please enter a valid quantity'),
+        body('productDescription')
+            .trim()
+            .notEmpty()
+            .withMessage( 'Please enter a product description')
     ]
 }

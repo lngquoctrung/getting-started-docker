@@ -17,22 +17,16 @@
         <div class="row mt-3">
             <div class="col-12 col-md-5">
                 <div class="w-100 border" style="height: 40vh">
-                    <img src="https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/42/330619/realme-13-plus-vang-2-638651073523023936-750x500.jpg" alt="" class="w-100 h-100 fit-cover">
+                    <img src="<%= locals.product.productImage %>" alt="" class="w-100 h-100 fit-cover">
                 </div>
             </div>
             <div class="col-12 col-md-7 mt-2 mt-md-0">
-                <h3>Iphone 16 Pro Max</h3>
-                <div class="mt-2"><b>Price:</b> 3000$</div>
-                <div class="mt-2"><b>Quantity:</b> 40</div>
+                <h3><%= locals.product.productName %></h3>
+                <div class="mt-2"><b>Price:</b> <%= locals.product.productPrice %>$</div>
+                <div class="mt-2"><b>Quantity:</b> <%= locals.product.productQuantity %></div>
                 <div class="mt-2">
                     <b>About this item</b>
-                    <ul>
-                        <li>This pre-owned product is not Apple certified, but has been professionally inspected, tested and cleaned by Amazon-qualified suppliers.</li>
-                        <li>There will be no visible cosmetic imperfections when held at an arm’s length. There will be no visible cosmetic imperfections when held at an arm’s length.</li>
-                        <li>This product will have a battery which exceeds 80% capacity relative to new.</li>
-                        <li>Accessories will not be original, but will be compatible and fully functional. Product may come in generic Box.</li>
-                        <li>This product is eligible for a replacement or refund within 90 days of receipt if you are not satisfied.</li>
-                    </ul>
+                    <p><%= locals.product.productDescription %></p>
                 </div>
                 <div class="mt-2">
                     <button class="btn btn-primary">Add to cart</button>

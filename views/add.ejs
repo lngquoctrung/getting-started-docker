@@ -12,37 +12,37 @@
 <body>
     <div class="container">
         <div class="vh-100 row d-flex justify-content-center align-items-center">
-            <div class="col-12 col-md-8 border p-5 rounded shadow">
+            <div class="col-12 col-md-8 border px-3 py-5 p-md-5 rounded shadow">
                 <a class="bg-primary text-white py-2 px-3 rounded text-decoration-none" href="/">Back</a>
                 <h3 class="fw-bold mt-3">Add Product</h3>
-                <form class="mt-2" action="">
+                <form class="mt-2" action="/products" method="post" enctype="multipart/form-data">
                     <div>
                         <label class="form-label" for="productName">Name</label>
-                        <input type="text" name="productName" id="productName" class="form-control" placeholder="Product Name">
+                        <input type="text" id="productName" name="productName" value="<%= locals.productName || "" %>" class="form-control" placeholder="Product Name">
                     </div>
                     <div class="mt-1">
                         <label class="form-label" for="productPrice">Price</label>
-                        <input type="text" name="productPrice" id="productPrice" class="form-control" placeholder="Product Price">
+                        <input type="text" id="productPrice" name="productPrice" value="<%= locals.productPrice || "" %>" class="form-control" placeholder="Product Price">
                     </div>
                     <div class="mt-1">
                         <label class="form-label" for="productQuantity">Quantity</label>
-                        <input type="number" name="productQuantity" id="productQuantity" class="form-control" placeholder="Product Quantity">
-                    </div>
-                    <div class="mt-1">
-                        <label class="form-label" for="productImage">Image</label>
-                        <input type="file" name="productImage" id="productImage" class="form-control">
+                        <input type="number" id="productQuantity" name="productQuantity" value="<%= locals.productQuantity %>" class="form-control" placeholder="Product Quantity">
                     </div>
                     <div class="mt-1">
                         <label class="form-label" for="productDescription">Description</label>
-                        <textarea name="productDescription" id="productDescription" class="form-control" placeholder="Product Description" rows="3"></textarea>
+                        <textarea id="productDescription" name="productDescription" value="<%= locals.productDescription %>" class="form-control" placeholder="Product Description" rows="3"></textarea>
                     </div>
                     <div class="mt-1">
-                        <div class="alert alert-danger">
-                            Please fill all the fields.
+                        <label class="form-label" for="productImage">Image</label>
+                        <input type="file" id="productImage" name="productImage" class="form-control">
+                    </div>
+                    <% if(locals.isError) { %>
+                        <div class="alert alert-danger mt-2" role="alert">
+                            <%= locals.errorMessage %>
                         </div>
-                    </div>
+                    <% } %>
                     <div class="mt-1">
-                        <button class="btn btn-success px-3" type="button">Add</button>
+                        <button class="btn btn-success px-3" type="submit">Add</button>
                     </div>
                 </form>
             </div>
