@@ -427,7 +427,7 @@ Although `ubuntu1` is run without network configuration, it still has **bridge n
 docker exec -it <container_name or container_id> bash
 ```
 
-The flag `-it` is shorthand for `--interactive` and `--tty`. `--interactive` keeps stdin open, allowing you to enter commands into the container, `--tty` provides a virtual TTY[^1] (like a terminal), giving you the same experience as working on a normal terminal. 
+The flag `-it` is shorthand for `--interactive` and `--tty`. `--interactive` keeps stdin open, allowing you to enter commands into the container, `--tty` provides a virtual TTY[^1] (like a terminal), giving you the same experience as working on a normal terminal.
 
 After accessing `ubuntu1` container, the first step you need to install library `iputils-ping` to use `ping` command. The second step, you try to ping to `ubuntu2` container as the following commands:
 
@@ -535,6 +535,35 @@ d5367fd51d2f   bridge    bridge    local
 194034d92605   none      null      local
 ...:~$ 
 ```
+
+### **8.2 Host Network**
+
+**Host Network** is the highest level network in Docker networks. Containers use directly network of the host, there is no network isolation. Containers are not provided private IP of `docker0` but use IP address and network configurations of the host. Especially, you do not need to map port, because the containers work like as progress on the host.
+
+You only use host network when you need to **optimize the network performance** or **containers need to access directly to the host's network**. Because, the host network will give high network performance, without the overhead of a virtual network layer. The downside when you use host network is that **these containers lose isolation**, which can **cause port conflicts with main services on the host or multiple containers using same port**.
+
+> The `host` networking driver **only works on Linux hosts**, and as **an opt-in feature in Docker Desktop version 4.34 and later**. To enable this feature in **Docker Desktop**, navigate to the **Resources** tab in **Settings**, and then under **Network** select **Enable host networking**.
+
+For example:
+
+```shell
+...:~$ docker run --rm -d --network host --name nginx-host nginx:latest
+a2474d5be8032819878bd270993970a61ee1bd8b1a746c3c47c597a0a6bd4ef9
+```
+
+Access Nginx by browsing to <http://localhost:80/>. To verify which process is bound to port `80`, using the `lsof` command. You need to use `sudo` because the process is owned by the Docker daemon user and you otherwise won't be able to see its name or PID
+
+```shell
+sudo lsof -i :80
+```
+
+You only stop the container, it will be removed automatically as it was started using the `--rm` option.
+
+```shell
+docker stop nginx-host
+```
+
+### **8.3 Overlay Network**
 
 ----------------------
 
