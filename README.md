@@ -638,7 +638,7 @@ Swarm initialized: current node (txiksyw9bvdx2m8wl7eof5bqd) is now a manager.
 
 To add a worker to this swarm, run the following command:
 
-    docker swarm join --token SWMTKN-1-2sbpymdifvpfxmn7wjfee9xo6cd6w7giqslzen0msfv1cbof3e-0r5x4bk5f6p5aaxmwu0ig86sl 172.17.0.2:2377
+    docker swarm join --token <token> <ip_address>:2377
 
 To add a manager to this swarm, run 'docker swarm join-token manager' and follow the instructions.
 root@manager:/# docker network create -d overlay swarm-net
@@ -656,7 +656,7 @@ jw7grim7dz5c   swarm-net         overlay   swarm
 On the `worker1` host, it cannot be on the same subnet, you can see that when creating swarm on the `manager`, Docker will create a token for us for the `worker` to use it to join the cluster. For example on the `worker` node:
 
 ```shell
-root@worker1:/# docker swarm join --token SWMTKN-1-2sbpymdifvpfxmn7wjfee9xo6cd6w7giqslzen0msfv1cbof3e-0r5x4bk5f6p5aaxmwu0ig86sl 172.17.0.2:2377
+root@worker1:/# docker swarm join --token <token> <ip_address>:2377
 This node joined a swarm as a worker.
 ```
 
