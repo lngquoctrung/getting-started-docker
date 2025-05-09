@@ -565,6 +565,158 @@ docker stop nginx-host
 
 ### **8.3 Overlay Network**
 
+**Overlay Network** in Docker is a virtual network type that allows containers to run on the multiple Docker hosts (for example, in a **Docker Swarm cluster** or **Kubernetes**) to communicate with each other securely as if they were on the same local LAN. Overlay network use **VXLAN** technology to create a virtual network spreading on multiple hosts. To use overlay network, you need to set up Swarm or manually configure on the hosts, containers on the multiple hosts can communicate via container names or IP addresses. You need to use overlay network in distributed applications like microservices running on multiple nodes.
+
+The first example, you will try with one host, you need to create Swarm cluster by following command:
+
+```shell
+docker swarm init --advertise-addr=<manager_ip_address>
+```
+
+You can then use `docker network ls` to display the network list, and you will see an overlay network created with the name `ingress` and a bridge network named `docker_gwbridge`. The `docker_gwbridge` connects the `ingress` network to the Docker host's network interface so that traffic can flow to and from swarm managers and workers. If you create swarm services and do not specify a network, they are connected to the `ingress` network. It is recommended that you use separate overlay networks for each application or group of applications which will work together.
+
+To display the nodes in Swarm, you can use the command below:
+
+```shell
+docker node ls
+```
+
+Now, you will run a service with Swarm:
+
+```shell
+docker service create --name nginx --publish target=80,published=80 --replicas=5 nginx:latest
+```
+
+After running the Nginx service, you can use `docker service ls` to show information about it and `docker service ps nginx` to show details
+
+For example:
+
+```shell
+...:~$ docker swarm init
+Swarm initialized: current node (bnao363aorpugn6j3up1vbqlw) is now a manager.
+
+To add a worker to this swarm, run the following command:
+
+    docker swarm join --token SWMTKN-<token> <ip_address>:2377
+
+To add a manager to this swarm, run 'docker swarm join-token manager' and follow the instructions.
+
+...:~$ docker node ls
+ID                            HOSTNAME         STATUS    AVAILABILITY   MANAGER STATUS   ENGINE VERSION
+bnao363aorpugn6j3up1vbqlw *   docker-desktop   Ready     Active         Leader           28.1.1
+
+...:~$ docker service create --name nginx --publish target=80,published=80 --replicas=5 nginx:latest
+q20sarht7a9pqdcyli747hub2
+overall progress: 5 out of 5 tasks 
+1/5: running   [==================================================>] 
+2/5: running   [==================================================>] 
+3/5: running   [==================================================>] 
+4/5: running   [==================================================>] 
+5/5: running   [==================================================>] 
+verify: Service q20sarht7a9pqdcyli747hub2 converged
+
+...:~$ docker service ls
+ID             NAME      MODE         REPLICAS   IMAGE          PORTS
+q20sarht7a9p   nginx     replicated   5/5        nginx:latest   *:80->80/tcp
+
+...:~$ docker service ps nginx
+ID             NAME      IMAGE          NODE             DESIRED STATE   CURRENT STATE            ERROR     PORTS
+h6i592pui4ul   nginx.1   nginx:latest   docker-desktop   Running         Running 48 seconds ago             
+oeqxmnexh6ls   nginx.2   nginx:latest   docker-desktop   Running         Running 49 seconds ago             
+og7zrh3wwvb9   nginx.3   nginx:latest   docker-desktop   Running         Running 48 seconds ago             
+0gk0zq0qdoqa   nginx.4   nginx:latest   docker-desktop   Running         Running 48 seconds ago             
+rnypz7m7h6jg   nginx.5   nginx:latest   docker-desktop   Running         Running 48 seconds ago
+```
+
+If you have a second host, you can join it to the Swarm cluster with the command `docker swarm join --token SWMTKN-<token> <ip_address>:2377`, at this point your first host will have the role of `manager` or `leader`, the second host will have the role of `worker`. After joining, on the manager node you can ping the worker node. Here is an example with more nodes in a Swarm cluster:
+
+On `manager` node, you initialize Swarm cluster and create your overlay network:
+
+```shell
+root@manager:/# docker swarm init
+Swarm initialized: current node (txiksyw9bvdx2m8wl7eof5bqd) is now a manager.
+
+To add a worker to this swarm, run the following command:
+
+    docker swarm join --token SWMTKN-1-2sbpymdifvpfxmn7wjfee9xo6cd6w7giqslzen0msfv1cbof3e-0r5x4bk5f6p5aaxmwu0ig86sl 172.17.0.2:2377
+
+To add a manager to this swarm, run 'docker swarm join-token manager' and follow the instructions.
+root@manager:/# docker network create -d overlay swarm-net
+jw7grim7dz5crzjf0a4liixun
+root@manager:/# docker network ls
+NETWORK ID     NAME              DRIVER    SCOPE
+c04a9e8955a0   bridge            bridge    local
+330f96647be2   docker_gwbridge   bridge    local
+b707ff729fcb   host              host      local
+vn9ocpxnvwf7   ingress           overlay   swarm
+3d0c1ea0f17d   none              null      local
+jw7grim7dz5c   swarm-net         overlay   swarm
+```
+
+On the `worker1` host, it cannot be on the same subnet, you can see that when creating swarm on the `manager`, Docker will create a token for us for the `worker` to use it to join the cluster. For example on the `worker` node:
+
+```shell
+root@worker1:/# docker swarm join --token SWMTKN-1-2sbpymdifvpfxmn7wjfee9xo6cd6w7giqslzen0msfv1cbof3e-0r5x4bk5f6p5aaxmwu0ig86sl 172.17.0.2:2377
+This node joined a swarm as a worker.
+```
+
+Back to `manager`, you will see that the worker server has joined the cluster:
+
+```shell
+root@manager:/# docker node ls
+ID                            HOSTNAME   STATUS    AVAILABILITY   MANAGER STATUS   ENGINE VERSION
+txiksyw9bvdx2m8wl7eof5bqd *   manager    Ready     Active         Leader           28.1.1
+j32ne2quefbooz0xzqwmnmp4p     worker1    Ready     Active                          28.1.1
+```
+
+Now let's try to run a service with the parameter `--replicas=5`, and as you can see the service will run on both nodes, which means that even if they are on the same subnet, they are still connected through the overlay network.
+
+```shell
+root@manager:/# docker service create --name nginx -p 80:80 --replicas=5 --network swarm-net nginx:latest
+pn34v0xufn4nvgiwk2tynlihc
+overall progress: 5 out of 5 tasks 
+1/5: running   [==================================================>] 
+2/5: running   [==================================================>] 
+3/5: running   [==================================================>] 
+4/5: running   [==================================================>] 
+5/5: running   [==================================================>] 
+verify: Service pn34v0xufn4nvgiwk2tynlihc converged 
+root@manager:/# docker service ls
+ID             NAME      MODE         REPLICAS   IMAGE          PORTS
+pn34v0xufn4n   nginx     replicated   5/5        nginx:latest   *:80->80/tcp
+root@manager:/# docker service ps nginx
+ID             NAME      IMAGE          NODE      DESIRED STATE   CURRENT STATE            ERROR     PORTS
+oqnq5myooj9z   nginx.1   nginx:latest   worker1   Running         Running 44 seconds ago             
+tqnut7zjsrkb   nginx.2   nginx:latest   manager   Running         Running 34 seconds ago             
+qigds8xx69qh   nginx.3   nginx:latest   worker1   Running         Running 44 seconds ago             
+viy765z3tmit   nginx.4   nginx:latest   manager   Running         Running 34 seconds ago             
+fyq59586qns8   nginx.5   nginx:latest   worker1   Running         Running 44 seconds ago             
+root@manager:/# 
+```
+
+### **8.4 None Network**
+
+As the name suggests, containers are completely isolated from the network. They are not assigned an IP and cannot communicate with other containers or the outside network. They only have a loopback interface (localhost). Used for tasks that do not require a network, such as offline data processing or high security.
+
+```shell
+...:~$ docker run -dit --name ubuntu --network none ubuntu:latest
+Unable to find image 'ubuntu:latest' locally
+latest: Pulling from library/ubuntu
+0622fac788ed: Pull complete 
+Digest: sha256:6015f66923d7afbc53558d7ccffd325d43b4e249f41a6e93eef074c9505d2233
+Status: Downloaded newer image for ubuntu:latest
+f807ad536ae1410b5f11679e4563a3fb354082eecd9efc5988bf9d00bf614aeb
+...:~$ docker ps -a
+CONTAINER ID   IMAGE           COMMAND       CREATED          STATUS          PORTS     NAMES
+f807ad536ae1   ubuntu:latest   "/bin/bash"   16 seconds ago   Up 15 seconds             ubuntu
+...:~$ docker exec -it ubuntu bash
+root@f807ad536ae1:/# hostname -I
+
+root@f807ad536ae1:/#  
+```
+
+As you can see, Ubuntu containers have no IP addresses at all, and are completely isolated from the outside world. In addition to the above network types, Docker also has another type called **Macvlan Network**, which is a rather complex network and is rarely used in practice. If you want to learn more, you can read it on Docker's page at [this link](https://docs.docker.com/engine/network/tutorials/macvlan/).
+
 ----------------------
 
 ## **9. How to save data with Docker Volume**
