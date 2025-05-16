@@ -14,7 +14,7 @@ RUN npm install
 # RUN apt-get install curl
 
 # Copy all files of the project into working directory
-COPY . .
+COPY .. .
 
 # Use port 3000 of the container
 EXPOSE 3000

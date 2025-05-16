@@ -721,6 +721,296 @@ As you can see, Ubuntu containers have no IP addresses at all, and are completel
 
 ## **9. How to save data with Docker Volume**
 
+According to the Docker container concept, a container is independent unit, all container data is isolated from the external world unless you map port. By default, Docker containers are ephemeral, meaning data in container will be lost when the containers are removed. However, you will need to keep container data in some cases, for example, you want to change the name of container, or you want to share that data with a same container. Docker provides for you a data management way is called **Volume**.
+
+The following example will illustrate the loss of data during the life cycle of a container, the `-rm`flag helps us to automatically remove the container when you stop it:
+
+```shell
+## Run a MongoDB container, and remember to use `-rm` flag
+...:~$ docker run -dit --name db --rm mongo:latest
+9cf0779070ed17f1859d80153403c69c7b6437f901a10ce50eefe6650bff73e4
+
+## Access into the container
+...:~$ docker exec -it db sh
+
+## Open mongosh
+# mongosh
+Current Mongosh Log ID:	68277d0ff2a52cebc3d861df
+Connecting to:		mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.5.0
+  ...
+  
+## Display the list of databases
+mydb> show dbs
+admin    8.00 KiB
+config  12.00 KiB
+local    8.00 KiB
+
+## Create a new database
+mydb> use mydb
+already on db mydb
+
+## Display the list of collections
+mydb> show collections
+
+## Create a new collection
+mydb> db.createCollection("users")
+{ ok: 1 }
+
+## Add a new record into the created collection
+mydb> db.users.insertOne({ name: "John", age: 25 })
+{
+  acknowledged: true,
+  insertedId: ObjectId('68277d8af2a52cebc3d861e0')
+}
+
+## Display all records in `users` collection
+mydb> db.users.find()
+[
+  { _id: ObjectId('68277d8af2a52cebc3d861e0'), name: 'John', age: 25 }
+]
+
+## Exit mongosh and exit container
+mydb> exit
+# exit
+
+## Stop container then it is removed automatically
+...:~$ docker stop db
+db
+
+## Run container again and open mongosh again
+...:~$ docker run -dit --name db --rm mongo:latest
+e91e0960caee1e06f8aa066c64867a856bae354ce273b49daf3ca1fc03f64c4b
+...:~$ docker exec -it db sh
+# mongosh
+...
+
+## Display the list of databases
+test> show dbs
+admin    8.00 KiB
+config  12.00 KiB
+local    8.00 KiB
+test> 
+```
+
+The above example is an example about MongoDB container, it simply runs a MongoDB container and creates a new database and collection and then adds a sample to the collection, then deletes that MongoDB container and recreates the same container. You can replace it with Ubuntu container and create a text file as the below example:
+
+```shell
+...:~$ docker run -dit --name no-volume-ubuntu --rm ubuntu:latest
+ae58cf38f88238fe7826105ff6fb489897bac44a360af3054a266ee072b0fc29
+...:~$ docker exec -it no-volume-ubuntu bash
+root@ae58cf38f882:/# mkdir data
+root@ae58cf38f882:/# echo "Hello world" > /data/text.txt
+root@ae58cf38f882:/# cat /data/text.txt 
+Hello world
+root@ae58cf38f882:/# exit
+exit
+...:~$ docker stop no-volume-ubuntu 
+no-volume-ubuntu
+...:~$ docker run -dit --name no-volume-ubuntu --rm ubuntu:latest
+160875c83ed064d39806c380b0ba42852b9aae50428e35379bf9e4274ba1bac0
+...:~$ docker exec -it no-volume-ubuntu bash
+root@160875c83ed0:/# ls
+bin  boot  dev  etc  home  lib  lib64  media  mnt  opt  proc  root  run  sbin  srv  sys  tmp  usr  var
+```
+
+As you can see in the two examples above, all data after deleting the container is deleted along with the container. As mentioned above, Docker Volume can solve this.
+
+**Docker Volume** is a mechanism in Docker for storing and managing persistent data that containers uses. It isn't the same as data in containers (which only exists for the life cycle of containers), volume allows data stored independently, shared between containers, or between the containers and the host.
+
+Volume is a directory or file stored the container's external file system, typically stored on file system of the host or on an external storing service. Volume is designed to:
+
+- **Persistent**: Data isn't removed when the containers are removed.
+- **Sharing**: Multiple containers can access into the same volume.
+- **Easy management**: Docker provides tools to create, remove, and check volume.
+
+Docker has three volume types: **Managed volumes**, **Bind mount volumes**, **Tmpfs volumes**.
+
+### **9.1 Managed Volumes**
+
+Volumes are managed by Docker, Docker automatically creates and manage volumes in default directory of the host (which typically is `/var/lib/docker/volumns` on Linux). The way it works is that volumes are created with `docker volume create` command or automatically when running container with the `v` or `-mount` flag. It doesn't depend on a specific location on the host, making it easy to manage. You will use it when you want Docker full control over the data and does not need to interfere with the storage location.
+
+```shell
+docker volume create <volume_name>
+
+docker COMMAND -v <volume_name>:<container_directory> IMAGE
+
+# or
+
+docker COMMAND --mount source=<volume_name>,target=<container_directory> IMAGE
+```
+
+In two cases, if you don't create volume or the volumes don't exist before running container then Docker automatically creates this volume for you. 
+
+For example:
+
+```shell
+...:~$ docker volume create mydata
+mydata
+...:~$ docker run -dit --name managed-volume-ubuntu -v mydata:/data --rm ubuntu:latest
+6253d2955c40b46ff388fc4b435c510d0f7a945700e29f9e2ac87cbd81172bd0
+...:~$ docker exec -it managed-volume-ubuntu bash
+root@6253d2955c40:/# ls
+bin  boot  data  dev  etc  home  lib  lib64  media  mnt  opt  proc  root  run  sbin  srv  sys  tmp  usr  var
+root@6253d2955c40:/# echo "Hello world" > ./data/text.txt
+root@6253d2955c40:/# exit
+exit
+...:~$ docker stop managed-volume-ubuntu 
+managed-volume-ubuntu
+...:~$ docker run -dit --name managed-volume-ubuntu -v mydata:/data --rm ubuntu:latest
+ba02c40d3d76b3ce52d7c6daf2767b25400ca37f9c640aa7dcaa3110f6f860de
+...:~$ docker exec -it managed-volume-ubuntu bash
+root@ba02c40d3d76:/# ls
+bin  boot  data  dev  etc  home  lib  lib64  media  mnt  opt  proc  root  run  sbin  srv  sys  tmp  usr  var
+root@ba02c40d3d76:/# cat ./data/text.txt 
+Hello world
+root@ba02c40d3d76:/# 
+```
+
+All data inside `/data` will be saved to `mydata`, and as you can see all data from the previous container is retained even after I deleted it. You can check volumes with the command `docker volume ls` and delete volumes with the command `docker volume rm <volume_name>.
+
+### **9.2 Bind Mounts**
+
+This is another type of volume, but this type of volume will directly link a directory or file on the host to a directory in the container. The way it works is that you specify a path on the host to mount to the container, the container can read/write data directly from the host directory. The advantage of this type of volume is that it is flexible and easy to use when you need to access data from the host. However, the disadvantage of this type is that it depends on the directory structure of the host, making it difficult to move between machines. You will use it when you need to synchronize data between the host and the container. For example, saving source code or configuration files.
+
+```shell
+...:~$ mkdir data && echo "Hello world" > ./data/text.txt
+
+...:~$ docker run -dit --rm --name bind-mounts-ubuntu -v ./data:/data ubuntu:latest 
+97caf4b74b40df4dcf27e86fa2700d846d7dfdaa30a37d7c16f93964ccb1166b
+
+...:~$ docker exec -it bind-mounts-ubuntu bash
+
+root@97caf4b74b40:/# ls
+bin  boot  data  dev  etc  home  lib  lib64  media  mnt  opt  proc  root  run  sbin  srv  sys  tmp  usr  var
+
+root@97caf4b74b40:/# cat ./data/text.txt 
+Hello world
+
+root@97caf4b74b40:/# exit
+exit
+
+...:~$ echo "Bind mounts" > ./data/text.txt 
+
+...:~$ cat ./data/text.txt 
+Bind mounts
+
+...:~$ docker exec -it bind-mounts-ubuntu bash
+
+root@97caf4b74b40:/# cat ./data/text.txt 
+Bind mounts
+```
+
+As you can see, I created a folder `data` and a text file `text.txt` on the host, then I ran an Ubuntu container, in the run command I mounted the newly created folder into that container. This means that these two folders on the host and the container are linked together. I tried to exit the host and edit that text file, and you saw something special, the file inside the container was also changed.
+
+### **9.3 tmpfs Mounts**
+
+This is not a common type of volume mount because this way of storing data is only temporary in the host's RAM, not written to disk. The data only exists for the life of the container or when the host restarts, they are not persistent, but very fast. We often use them for sensitive data such as passwords or temporary data that does not need to be stored permanently.
+
+```shell
+...:~$ docker run -dit --name tmpfs-ubuntu --mount type=tmpfs,destination=/cache ubuntu:latest
+3021cc23a170f86b549df024b7e1aed11cec1f98ca28ff9a88ffe273a25890f2
+...:~$ docker exec -it tmpfs-ubuntu bash
+root@3021cc23a170:/# ls
+bin  boot  cache  dev  etc  home  lib  lib64  media  mnt  opt  proc  root  run  sbin  srv  sys  tmp  usr  var
+```
+
+As you can see, the cache folder already exists in the container. If you reset the host now, this folder will disappear.
+
+So you have practiced with Docker Volume, as you can see, the volume is designed to ensure persistence, meaning that the data will not be deleted even if we delete the container; sharing, not only the host can directly change the volume in the container but another container can also access that volume and change it, it will affect all containers using that volume, I will show you an example below:
+
+Create the first container:
+
+```shell
+...:~$ docker volume create sharing-data
+sharing-data
+
+...:~$ docker run -dit --name db1 -v sharing-data:/data/db mongo:latest
+9cf9a7658eb5a2b2fa7f987fe242527dc3974136a8b0bbb27d671b9c65bee59b
+
+...:~$ docker exec -it db1 bash
+root@9cf9a7658eb5:/# mongosh
+...
+
+test> use mydb
+switched to db mydb
+
+mydb> db.createCollection("users")
+{ ok: 1 }
+
+mydb> db.users.insertOne({ name: "Nguyen Van A", age: 25 })
+{
+  acknowledged: true,
+  insertedId: ObjectId('6827b670c27cd0d9efd861e0')
+}
+
+mydb> db.users.find()
+[
+  {
+    _id: ObjectId('6827b670c27cd0d9efd861e0'),
+    name: 'Nguyen Van A',
+    age: 25
+  }
+]
+```
+
+Create a second container:
+
+```shell
+...:~$ docker run -dit --name db2 -v sharing-data:/data/db mongo:latest
+a3c32855adda1d1cfddc1ce117d4ccec83121e58d58b88336847fd5e5608a016
+
+...:~$ docker exec -it db1 bash
+
+root@9cf9a7658eb5:/# mongosh
+...
+
+test> show dbs
+admin   40.00 KiB
+config  12.00 KiB
+local   40.00 KiB
+mydb    40.00 KiB
+
+test> use mydb
+switched to db mydb
+
+mydb> db.users.find()
+[
+  {
+    _id: ObjectId('6827b670c27cd0d9efd861e0'),
+    name: 'Nguyen Van A',
+    age: 25
+  }
+]
+
+mydb> db.users.insertOne({ name: "Nguyen Van B", age: 34 })
+{
+  acknowledged: true,
+  insertedId: ObjectId('6827b6d2dfd8b15e09d861e0')
+}
+mydb> 
+```
+
+Back to the first container:
+
+```shell
+mydb> db.users.find()
+[
+  {
+    _id: ObjectId('6827b670c27cd0d9efd861e0'),
+    name: 'Nguyen Van A',
+    age: 25
+  },
+  {
+    _id: ObjectId('6827b6d2dfd8b15e09d861e0'),
+    name: 'Nguyen Van B',
+    age: 34
+  }
+]
+mydb> 
+```
+
+As you can see, when container 2 adds a sample, container 1 also changes, right? That is the sharing of volume.
+
 ----------------------
 
 ## **10. Build and create a container from Dockerfile**
@@ -735,7 +1025,7 @@ FROM node:18
 WORKDIR /app
 
 # Copy the package.json file into the container
-COPY package.json .
+COPY product-management/package.json .
 
 # Install dependencies
 RUN npm install
@@ -791,7 +1081,7 @@ EXPOSE 3000
 CMD [ "npm", "start" ]
 ```
 
-Because I use `Nodemon` module, the way to run the website will be a little different from the old Dockerfile. The details about the packages I use, you can read in [package.json](./package.json) file. When you test the application on the host, the folder `node_modules` will be installed, if you build the image with this folder, it will take a long time. To avoid that, you can remove or place it into the `.dockerginore` file. You can write a `.dockerignore` file and write filenames or folder names that you don't want to copy into to container, it will ignore files and folders when building image. For example:
+Because I use `Nodemon` module, the way to run the website will be a little different from the old Dockerfile. The details about the packages I use, you can read in [package.json](product-management/package.json) file. When you test the application on the host, the folder `node_modules` will be installed, if you build the image with this folder, it will take a long time. To avoid that, you can remove or place it into the `.dockerginore` file. You can write a `.dockerignore` file and write filenames or folder names that you don't want to copy into to container, it will ignore files and folders when building image. For example:
 
 ```.dockerignore
 node_modules

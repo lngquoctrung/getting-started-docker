@@ -2,13 +2,13 @@
 services:
   # The first service
   app:                                        # The service name
-    container_name: name                      # Use to change the service name
+    # container_name: name                      # Use to change the service name
     build:
-      context: .                              # The directory contains Dockerfile (. is current directory)
+      context: ..                              # The directory contains Dockerfile (. is current directory)
       dockerfile: Dockerfile                  # The name of Dockerfile file
     ports:                                    
       - 3000:3000                             # Mapping the port 3000 of host to port 3000 of local container
-    restart: always                           # Restart container when it fails
+    # restart: always                           # Restart container when it fails
     healthcheck:                              # Use to check the status of container
       # A test command is used to check the status of the container
       # The shell is used to check, the below command use the CMD shell
@@ -25,8 +25,17 @@ services:
   nginx:                                      # The service name
     image: nginx:1.27.4                       # The image is pulled from Docker Hub 
     ports:      
-      - 8`0:80                                 # Mapping port
+      - 80:80                                 # Mapping port
+    deploy:                                   # Configurations for Docker Swarm
+      replicas: 3                             # Duplicate the service to 3 services
+      resources:                              # The resource which the service is allowed to use
+        limits:                               # The resource limitation
+          cpus: "0.1"                         # Allow use maximum 10% the power of CPU
+          memory: 50M                         # The maximum memory is used is 50MB
+      restart_policy:                         # Restart the service
+        condition: on-failure
 
 networks:                                     # Create a local network (Containers in the same local network can communicate with each other)
   webnet:                                     # The name of local network
-    driver: bridge                            # The driver of network (bride use in Docker Compose)
+    # driver: bridge                            # The driver of network (bride use in Docker Compose)
+    driver: overlay                           # Driver overlay use in Docker Swarm
