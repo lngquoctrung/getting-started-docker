@@ -1210,31 +1210,37 @@ List of main instructions in Dockerfile:
 
 ### **11.2 How to share your image with Docker Hub**
 
-How to share your image with others, very simple. First you need to access the page <https://hub.docker.com/repositories>, then log in to your account, and then remember what your account username is. Then select **Create repository**, in here you name the repository as you like and click **Create**. After creating the repository, now go back to docker on your computer, first check if you have logged in or not with this command `docker login`, if you have successfully logged in, you will go to the step of pushing it to the Hub:
+How to share your image with others, very simple. 
 
-The first step, you need to rename your image and tag according to the following syntax:
+1. First you need to access the page <https://hub.docker.com/repositories>, then log in to your account, and then remember what your account username is. 
+2. Then select **Create repository**, in here you name the repository as you like and click **Create**. 
+3. After creating the repository, now go back to docker on your computer, first check if you have logged in or not with this command `docker login`.
 
-```text
-<dockerhub-username>/<repository-name>:<tag>
-```
+If you have successfully logged in, you will go to the step of pushing it to the Hub:
 
-The command to rename the image and tag is:
+1. The first step, you need to rename your image and tag according to the following syntax:
 
-```shell
-docker tag <old_image_name>:<old_tag> <new_image_name>:<new_tag>
-```
+    ```text
+    <dockerhub-username>/<repository-name>:<tag>
+    ```
+    
+    The command to rename the image and tag is:
+    
+    ```shell
+    docker tag <old_image_name>:<old_tag> <new_image_name>:<new_tag>
+    ```
+    
+    Example
+    
+    ```shell
+    docker tag myweb:latest johndoe/my-app:latest
+    ```
 
-Example
+2. Step two is to push them to the Hub with the following command:
 
-```shell
-docker tag myweb:latest johndoe/my-app:latest
-```
-
-Step two is to push them to the Hub with the following command:
-
-```shell
-docker push johndoe/my-app:latest
-```
+    ```shell
+    docker push johndoe/my-app:latest
+    ```
 
 > Note the name New image must follow the rule `<dockerhub-username>/<repository-name>:<tag>`
 
