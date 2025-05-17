@@ -1031,6 +1031,8 @@ As you can see, when container 2 adds a sample, container 1 also changes, right?
 
 ## **11. Build an image by Dockerfile and share image with Docker Hub**
 
+### **11.1 Build an image by Dockerfile**
+
 Docker does not just allow you to run existing containers, which helps you to custom and build our images. Especially, you can share your images with other people by **Docker Hub**. To build your image, we need to write a `Dockerfile` without file extension, `Dockerfile` is a simple text file contains commands Docker uses to create a new image. In other words, this is an instruction telling Docker what to do when building a new image. For example:
 
 ```Dockerfile
@@ -1102,7 +1104,7 @@ EXPOSE 3001
 CMD [ "npm", "start" ]
 ```
 
-Because I use `Nodemon` module, the way to run the website will be a little different from the old Dockerfile. The details about the packages I use, you can read in [package.json](product-management/package.json) file. When you test the application on the host, the folder `node_modules` will be installed, if you build the image with this folder, it will take a long time. To avoid that, you can remove or place it into the `.dockerginore` file. You can write a `.dockerignore` file and write filenames or folder names that you don't want to copy into to container, it will ignore files and folders when building image, and the same goes for the `.env` environment variable file, it is very important so we cannot put it inside the container.
+Because I use `Nodemon` module, the way to run the website will be a little different from the old Dockerfile. The details about the packages I use, you can read in [package.json](simple-website/package.json) file. When you test the application on the host, the folder `node_modules` will be installed, if you build the image with this folder, it will take a long time. To avoid that, you can remove or place it into the `.dockerginore` file. You can write a `.dockerignore` file and write filenames or folder names that you don't want to copy into to container, it will ignore files and folders when building image, and the same goes for the `.env` environment variable file, it is very important so we cannot put it inside the container.
 
 If you are afraid that if you ignore the `.env` environment variable file, the application inside the container cannot run, don't worry, Dockerfile allows you to directly pass environment variables through the `ENV` instruction, or through the `-e` tag. However, you should only use `ENV` for less sensitive variables such as `NODE_ENVIRONMENT`, `PORT`, ... because if you set important information such as secret key or private key with the `ENV` instruction, when others pull your image and check the history, they will see the information of these environment variables. The solution is that you can use the `-e` flag when running the image to pass it directly as follows `docker run -e KEY=<your_key>`, this will avoid revealing confidential information when sharing with others.
 
@@ -1205,6 +1207,8 @@ List of main instructions in Dockerfile:
 | `SHELL`       | Change the default shell used by `RUN`, `CMD`, `ENTRYPOINT`                   |
 | `HEALTHCHECK` | Define how to check the "alive" status of the container                       |
 | `STOPSIGNAL`  | Set the signal when stopping the container (e.g. `SIGTERM`)                   |
+
+### **11.2 How to share your image with Docker Hub**
 
 How to share your image with others, very simple. First you need to access the page <https://hub.docker.com/repositories>, then log in to your account, and then remember what your account username is. Then select **Create repository**, in here you name the repository as you like and click **Create**. After creating the repository, now go back to docker on your computer, first check if you have logged in or not with this command `docker login`, if you have successfully logged in, you will go to the step of pushing it to the Hub:
 
