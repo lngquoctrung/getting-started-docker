@@ -3,7 +3,7 @@ const path = require("path");
 const fs = require("fs");
 const {MulterError} = require("multer");
 
-const desDirPath = "./public/upload";
+const desDirPath = "./uploads/public";
 // Create the temporary folder and destination folder
 const createDirectory = (directoryPath) => {
     if(!fs.existsSync(directoryPath)) 
