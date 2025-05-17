@@ -95,7 +95,7 @@ app.get("/error", (req, res) => {
 
 app.use("/products", require("./routers/productRouter"));
 app.use("/users", require("./routers/userRouter"));
-app.use("/public", express.static(path.join(__dirname, "/public")));
+app.use("/public", express.static(path.join(__dirname, "..", "uploads", "public")));
 
 app.use((req, res) => {
     return res.render("error", {

@@ -1,14 +1,30 @@
 # **GETTING STARTED WITH DOCKER**
 
+## **Table of content**
+
+1. [What is Docker?](#1-what-is-docker)
+2. [Benefits of Docker](#2-benefits-of-docker)
+3. [Terms in Docker](#3-terms-in-docker)
+4. [How to run a container](#4-how-to-run-a-container)
+5. [Display the list of containers and images](#5-display-the-list-of-containers-and-images)
+6. [Stop and restart a container](#6-stop-and-restart-a-container)
+7. [Remove a container or multiple containers](#7-remove-a-container-or-multiple-containers)
+8. [Remove an image or multiple images](#8-remove-an-image-or-multiple-images)
+9. [Containers communicate with each other via Docker Network](#9-containers-communicate-with-each-other-via-docker-network)
+10. [How to save data with Docker Volume](#10-how-to-save-data-with-docker-volume)
+11. [Build an image by Dockerfile and share image with Docker Hub](#11-build-an-image-by-dockerfile-and-share-image-with-docker-hub)
+12. [Run multi-containers with Docker Compose](#12-run-multi-containers-with-docker-compose)
+13. [Docker Swarm](#13-docker-swarm)
+
 ----------------------
 
-## **0. What is Docker?**
+## **1. What is Docker?**
 
 **Docker** is an open source platform used to automatically deploy, maintain, manage, and run applications in containers. **A container** is a lightweight, independence init that contains resources, libraries, and necessary dependencies for an application to run in any environments, from personal computers to cloud systems.
 
 ----------------------
 
-## **1. Benefits of Docker**
+## **2. Benefits of Docker**
 
 1. **Containerization**: This is different from **the traditional virtual machine (VMs)**, Docker uses the containers to package their applications and running environments. The containers share kernel of the host operating systems, which helps them to be lighter and restart faster with VMs.
 
@@ -22,7 +38,7 @@
 
 ----------------------
 
-## **2. Terms in Docker**
+## **3. Terms in Docker**
 
 1. **Container**: An application init is independent, slight, which contains the applications and every necessary thing to run itself such as resources, libraries, configurations, dependencies.
 
@@ -44,7 +60,7 @@
 
 ----------------------
 
-## **3. How to run a container**
+## **4. How to run a container**
 
 Before running a container in Docker, you need to install and check to make sure that it is installed. The guides installation Docker for [Windows](https://docs.docker.com/desktop/setup/install/windows-install/) and [Ubuntu](https://docs.docker.com/engine/install/ubuntu/) are available. After installing Docker, we can use the below command to check.
 
@@ -87,9 +103,9 @@ ce8c79ea01229e24ba3380894bdc3ddd0900fd15983b5ff46c2932f6f7d83869
 
 ----------------------
 
-## **4. Display a list of containers and images**
+## **5. Display the list of containers and images**
 
-### **4.1 Display a list of containers**
+### **5.1 Display the list of containers**
 
 To display all containers in your repository, you can run the following command:
 
@@ -108,7 +124,7 @@ ce8c79ea0122   nginx:latest    "/docker-entrypoint.…"   9 minutes ago   Up 9 m
 
 The above result shows that my repository has two containers. It includes Nginx and Ubuntu, the Ubuntu container's name is `ubuntu-os` and the Nginx container's name is `nginx`. The Nginx container still is working, but the Ubuntu container exited 7 seconds ago.
 
-### **4.2 Display a list of images**
+### **5.2 Display the list of images**
 
 Now, you will learn how to display the list of images in our repository. It's quite easy, you just to run the below command:
 
@@ -127,7 +143,7 @@ ubuntu       latest    72297848456d   2 months ago   117MB
 
 ----------------------
 
-## **5. Stop and restart a container**
+## **6. Stop and restart a container**
 
 But how can you stop a container? Almost you should stop the containers when you don't need to use it and save the memory for the host. To stop a container, you can use the below command:
 
@@ -166,7 +182,7 @@ docker start nginx
 
 ----------------------
 
-## **6. Remove a container or containers**
+## **7. Remove a container or multiple containers**
 
 In this section, you learn about how to delete a container or containers. Before deleting, you should check the status of containers on our repository by the following command:
 
@@ -219,7 +235,7 @@ CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
 
 ----------------------
 
-## **7. Delete an image or images**
+## **8. Remove an image or multiple images**
 
 The way is as same as with deleting the containers, but you will use the command `docker rmi`
 
@@ -305,7 +321,7 @@ Run 'docker container COMMAND --help' for more information on a command.
 
 ----------------------
 
-## **8. Containers communicate with each other via Docker Network**
+## **9. Containers communicate with each other via Docker Network**
 
 Now that we understand how Docker containers work as independent units to deploy applications, the next important element to explore is how these containers communicate with each other and with the outside world. That’s where the Docker network comes in – a core component that manages and configures networking in a containerized environment. Docker networks not only help containers “see” each other, but also ensure flexibility, security, and performance in internal and external communication.
 
@@ -327,7 +343,7 @@ NETWORK ID     NAME      DRIVER    SCOPE
 194034d92605   none      null      local
 ```
 
-### **8.1 Bridge Network**
+### **9.1 Bridge Network**
 
 **Bridge network** is default network when you run a container without specifying network. Containers in bridge network are assigned a private IP address in **a private subnet**.
 
@@ -536,7 +552,7 @@ d5367fd51d2f   bridge    bridge    local
 ...:~$ 
 ```
 
-### **8.2 Host Network**
+### **9.2 Host Network**
 
 **Host Network** is the highest level network in Docker networks. Containers use directly network of the host, there is no network isolation. Containers are not provided private IP of `docker0` but use IP address and network configurations of the host. Especially, you do not need to map port, because the containers work like as progress on the host.
 
@@ -551,7 +567,7 @@ For example:
 a2474d5be8032819878bd270993970a61ee1bd8b1a746c3c47c597a0a6bd4ef9
 ```
 
-Access Nginx by browsing to <http://localhost:80/>. To verify which process is bound to port `80`, using the `lsof` command. You need to use `sudo` because the process is owned by the Docker daemon user and you otherwise won't be able to see its name or PID
+Access Nginx by browsing to <http://localhost:80/>. To verify which process is bound to port `80`, using the `lsof` command. You need to use `sudo` because the process is owned by the Docker daemon user, and you otherwise won't be able to see its name or PID
 
 ```shell
 sudo lsof -i :80
@@ -563,7 +579,7 @@ You only stop the container, it will be removed automatically as it was started 
 docker stop nginx-host
 ```
 
-### **8.3 Overlay Network**
+### **9.3 Overlay Network**
 
 **Overlay Network** in Docker is a virtual network type that allows containers to run on the multiple Docker hosts (for example, in a **Docker Swarm cluster** or **Kubernetes**) to communicate with each other securely as if they were on the same local LAN. Overlay network use **VXLAN** technology to create a virtual network spreading on multiple hosts. To use overlay network, you need to set up Swarm or manually configure on the hosts, containers on the multiple hosts can communicate via container names or IP addresses. You need to use overlay network in distributed applications like microservices running on multiple nodes.
 
@@ -694,7 +710,7 @@ fyq59586qns8   nginx.5   nginx:latest   worker1   Running         Running 44 sec
 root@manager:/# 
 ```
 
-### **8.4 None Network**
+### **9.4 None Network**
 
 As the name suggests, containers are completely isolated from the network. They are not assigned an IP and cannot communicate with other containers or the outside network. They only have a loopback interface (localhost). Used for tasks that do not require a network, such as offline data processing or high security.
 
@@ -719,7 +735,7 @@ As you can see, Ubuntu containers have no IP addresses at all, and are completel
 
 ----------------------
 
-## **9. How to save data with Docker Volume**
+## **10. How to save data with Docker Volume**
 
 According to the Docker container concept, a container is independent unit, all container data is isolated from the external world unless you map port. By default, Docker containers are ephemeral, meaning data in container will be lost when the containers are removed. However, you will need to keep container data in some cases, for example, you want to change the name of container, or you want to share that data with a same container. Docker provides for you a data management way is called **Volume**.
 
@@ -825,7 +841,7 @@ Volume is a directory or file stored the container's external file system, typic
 
 Docker has three volume types: **Managed volumes**, **Bind mount volumes**, **Tmpfs volumes**.
 
-### **9.1 Managed Volumes**
+### **10.1 Managed Volumes**
 
 Volumes are managed by Docker, Docker automatically creates and manage volumes in default directory of the host (which typically is `/var/lib/docker/volumns` on Linux). The way it works is that volumes are created with `docker volume create` command or automatically when running container with the `v` or `-mount` flag. It doesn't depend on a specific location on the host, making it easy to manage. You will use it when you want Docker full control over the data and does not need to interfere with the storage location.
 
@@ -868,7 +884,7 @@ root@ba02c40d3d76:/#
 
 All data inside `/data` will be saved to `mydata`, and as you can see all data from the previous container is retained even after I deleted it. You can check volumes with the command `docker volume ls` and delete volumes with the command `docker volume rm <volume_name>.
 
-### **9.2 Bind Mounts**
+### **10.2 Bind Mounts**
 
 This is another type of volume, but this type of volume will directly link a directory or file on the host to a directory in the container. The way it works is that you specify a path on the host to mount to the container, the container can read/write data directly from the host directory. The advantage of this type of volume is that it is flexible and easy to use when you need to access data from the host. However, the disadvantage of this type is that it depends on the directory structure of the host, making it difficult to move between machines. You will use it when you need to synchronize data between the host and the container. For example, saving source code or configuration files.
 
@@ -902,7 +918,7 @@ Bind mounts
 
 As you can see, I created a folder `data` and a text file `text.txt` on the host, then I ran an Ubuntu container, in the run command I mounted the newly created folder into that container. This means that these two folders on the host and the container are linked together. I tried to exit the host and edit that text file, and you saw something special, the file inside the container was also changed.
 
-### **9.3 tmpfs Mounts**
+### **10.3 tmpfs Mounts**
 
 This is not a common type of volume mount because this way of storing data is only temporary in the host's RAM, not written to disk. The data only exists for the life of the container or when the host restarts, they are not persistent, but very fast. We often use them for sensitive data such as passwords or temporary data that does not need to be stored permanently.
 
@@ -1013,9 +1029,9 @@ As you can see, when container 2 adds a sample, container 1 also changes, right?
 
 ----------------------
 
-## **10. Build and create a container from Dockerfile**
+## **11. Build an image by Dockerfile and share image with Docker Hub**
 
-Docker does not just allow us to run existing containers, which helps us to custom and build our images. Especially, we can share our images with other people by **Docker Hub**. To build our image, we need to write a `Dockerfile` without file extension, `Dockerfile` is a simple text file contains commands Docker uses to create a new image. In other words, this is an instruction telling Docker what to do when building a new image. For example:
+Docker does not just allow you to run existing containers, which helps you to custom and build our images. Especially, you can share your images with other people by **Docker Hub**. To build your image, we need to write a `Dockerfile` without file extension, `Dockerfile` is a simple text file contains commands Docker uses to create a new image. In other words, this is an instruction telling Docker what to do when building a new image. For example:
 
 ```Dockerfile
 # Declare that our image is built based on the NodeJS image (base image)
@@ -1024,13 +1040,13 @@ FROM node:18
 # Set the working directory in container
 WORKDIR /app
 
-# Copy the package.json file into the container
-COPY product-management/package.json .
+# Copy all files with filenames starting with `package` and file extension `json` to the container's working directory
+COPY package*.json .
 
 # Install dependencies
 RUN npm install
 
-# Copy all source code into the container
+# Copy source code into the container
 COPY . .
 
 # Expose port 3000 of the container (Depending on our application)
@@ -1050,14 +1066,19 @@ The command includes:
 
 - `docker image`: The Docker command uses to manage the Docker image.
 - `build`: The command uses to build an image from a Dockerfile.
-- `-t myweb:latest`: The shorthand for `--tag` uses to set name and tag of image. The following parameter includes two parts, the first part (before the `:`) is image name, and the second part is image tag version. The tag we can use as `myweb:v1`, `myweb:1.0.0`,...
+- `-t myweb:latest`: The shorthand for `--tag` uses to set name and tag of image. The following parameter includes two parts, the first part (before the `:`) is image name, and the second part is image tag version. The tag we can use as `myweb:v1`, `myweb:1.0.0`,... You can also omit the tag after the colon, but you should still add it to make it clear which version your image is on.
 - `.`: The dot means the current context containing the Dockerfile. If you place the Dockerfile in another context, then you will replace the dot with `./directoryA/directoryB/`.
 
-Now, I will try to build a web application with Node.js and make sure that it activates well on the host. Now, I will write a Dockerfile as:
+Now, you will try to build a web application with Node.js and make sure that it activates well on the host. The source code for this section is located in the `/simple-website` directory, which is a server side web application that uses `Express` and `EJS` to render the website. Now, I will write a Dockerfile as:
 
 ```Dockerfile
 # Use the NodeJS image from Docker Hub
-FROM node:current-alpine3.20
+FROM node:latest
+
+# Setup environmental variables
+## Change localhost to 0.0.0.0
+ENV HOST=0.0.0.0
+ENV PORT=3001
 
 # Setup the working directory
 WORKDIR /app
@@ -1074,82 +1095,156 @@ RUN npm install
 # Copy all files of the project into working directory
 COPY . .
 
-# Use port 3000 of the container
-EXPOSE 3000
+# Use port 3001 of the container
+EXPOSE 3001
 
 # Run the project (Only have a CMD command in the last file, can use ENTRYPOINT with CMD)
 CMD [ "npm", "start" ]
 ```
 
-Because I use `Nodemon` module, the way to run the website will be a little different from the old Dockerfile. The details about the packages I use, you can read in [package.json](product-management/package.json) file. When you test the application on the host, the folder `node_modules` will be installed, if you build the image with this folder, it will take a long time. To avoid that, you can remove or place it into the `.dockerginore` file. You can write a `.dockerignore` file and write filenames or folder names that you don't want to copy into to container, it will ignore files and folders when building image. For example:
+Because I use `Nodemon` module, the way to run the website will be a little different from the old Dockerfile. The details about the packages I use, you can read in [package.json](product-management/package.json) file. When you test the application on the host, the folder `node_modules` will be installed, if you build the image with this folder, it will take a long time. To avoid that, you can remove or place it into the `.dockerginore` file. You can write a `.dockerignore` file and write filenames or folder names that you don't want to copy into to container, it will ignore files and folders when building image, and the same goes for the `.env` environment variable file, it is very important so we cannot put it inside the container.
+
+If you are afraid that if you ignore the `.env` environment variable file, the application inside the container cannot run, don't worry, Dockerfile allows you to directly pass environment variables through the `ENV` instruction, or through the `-e` tag. However, you should only use `ENV` for less sensitive variables such as `NODE_ENVIRONMENT`, `PORT`, ... because if you set important information such as secret key or private key with the `ENV` instruction, when others pull your image and check the history, they will see the information of these environment variables. The solution is that you can use the `-e` flag when running the image to pass it directly as follows `docker run -e KEY=<your_key>`, this will avoid revealing confidential information when sharing with others.
+
+For example:
 
 ```.dockerignore
 node_modules
+.env
 ```
 
-Now, I will build it by the following command:
+Now, you will build it by the following command:
 
 ```shell
 docker image build -t myweb:latest .
 ```
 
 ```shell
-...:~/Projects/docker-projects/getting-started$ docker image build -t myweb:latest .
-[+] Building 4.3s (11/11) FINISHED                                                                                               docker:desktop-linux
- => [internal] load build definition from Dockerfile                                                                                             0.0s
- => => transferring dockerfile: 709B                                                                                                             0.0s
- => [internal] load metadata for docker.io/library/node:current-alpine3.20                                                                       3.5s
- => [auth] library/node:pull token for registry-1.docker.io                                                                                      0.0s
- => [internal] load .dockerignore                                                                                                                0.0s
- => => transferring context: 52B                                                                                                                 0.0s
- => [1/5] FROM docker.io/library/node:current-alpine3.20@sha256:45b0799541e0fa993516a147bd9c59a5c2b81ec06cfb8f6e6e18d222f2780e23                 0.0s
- => => resolve docker.io/library/node:current-alpine3.20@sha256:45b0799541e0fa993516a147bd9c59a5c2b81ec06cfb8f6e6e18d222f2780e23                 0.0s
- => [internal] load build context                                                                                                                0.0s
- => => transferring context: 21.61kB                                                                                                             0.0s
- => CACHED [2/5] WORKDIR /app                                                                                                                    0.0s
- => CACHED [3/5] COPY package*.json ./                                                                                                           0.0s
- => CACHED [4/5] RUN npm install                                                                                                                 0.0s
- => [5/5] COPY . .                                                                                                                               0.0s
- => exporting to image                                                                                                                           0.6s
- => => exporting layers                                                                                                                          0.1s
- => => exporting manifest sha256:9b93f9e77960240d481966ae6b384b9e4e07a3dec988b545410048932e73cf0e                                                0.0s
- => => exporting config sha256:ac4cd2b770b749bf34d0633989c5b0b11cca077e03ed12bdfb2d978e27638cdf                                                  0.0s
- => => exporting attestation manifest sha256:57732ca998f88768c60cc45dfaed3425f0d9f9318b819907a650b130ff991f6b                                    0.0s
- => => exporting manifest list sha256:d3dccbe289a08ed76a0e494c370d0ed4c6ed4020930b9da074c55190081d02b9                                           0.0s
- => => naming to docker.io/library/myweb:latest                                                                                                  0.0s
- => => unpacking to docker.io/library/myweb:latest                                                                                               0.4s
+...:~/.../simple-website$ docker image build -t myweb:latest .
+[+] Building 37.1s (11/11) FINISHED                                                                                                                     docker:desktop-linux
+ => [internal] load build definition from Dockerfile                                                                                                                    0.0s
+ => => transferring dockerfile: 762B                                                                                                                                    0.0s
+ => [internal] load metadata for docker.io/library/node:latest                                                                                                          5.4s
+ => [auth] library/node:pull token for registry-1.docker.io                                                                                                             0.0s
+ => [internal] load .dockerignore                                                                                                                                       0.0s
+ => => transferring context: 57B                                                                                                                                        0.0s
+ => [1/5] FROM docker.io/library/node:latest@sha256:37c7b4cd8867313fc17ba76c1a6676414c61e2aac113694072bb8e3ef6d0a4c8                                                   27.8s
+ => => resolve docker.io/library/node:latest@sha256:37c7b4cd8867313fc17ba76c1a6676414c61e2aac113694072bb8e3ef6d0a4c8                                                    0.0s
+ => => sha256:1ae9f8b6657d61fb9fa6b8995e315b6e5d38e3740d183a25d093d5701ebf1adb 446B / 446B                                                                              0.4s
+ => => sha256:56fad480e018beeb928505d07b558c8da2a24e15dc0ee09bf5245f679409cddb 1.25MB / 1.25MB                                                                          0.8s
+ => => sha256:2efaf6f8ad77da7c7833d7eaca1b98adcaddb8af75ac939cb151c389ab7b4472 58.42MB / 58.42MB                                                                        4.1s
+ => => sha256:bbfac282b0e7d18b4f6905d87e9d0d0c4ab6cb70033e39c9c7690b45a77cc589 3.33kB / 3.33kB                                                                          0.9s
+ => => sha256:c187b51b626e1d60ab369727b81f440adea9d45e97a45e137fc318be0bb7f09f 211.36MB / 211.36MB                                                                     20.0s
+ => => sha256:ca513cad200b13ead2c745498459eed58a6db3480e3ba6117f854da097262526 64.39MB / 64.39MB                                                                       10.7s
+ => => sha256:63964a8518f54dc31f8df89d7f06714c7a793aa1aa08a64ae3d7f4f4f30b4ac8 24.01MB / 24.01MB                                                                        4.8s
+ => => sha256:cf05a52c02353f0b2b6f9be0549ac916c3fb1dc8d4bacd405eac7f28562ec9f2 48.49MB / 48.49MB                                                                        3.1s
+ => => extracting sha256:cf05a52c02353f0b2b6f9be0549ac916c3fb1dc8d4bacd405eac7f28562ec9f2                                                                               1.1s
+ => => extracting sha256:63964a8518f54dc31f8df89d7f06714c7a793aa1aa08a64ae3d7f4f4f30b4ac8                                                                               0.4s
+ => => extracting sha256:ca513cad200b13ead2c745498459eed58a6db3480e3ba6117f854da097262526                                                                               1.9s
+ => => extracting sha256:c187b51b626e1d60ab369727b81f440adea9d45e97a45e137fc318be0bb7f09f                                                                               4.9s
+ => => extracting sha256:bbfac282b0e7d18b4f6905d87e9d0d0c4ab6cb70033e39c9c7690b45a77cc589                                                                               0.0s
+ => => extracting sha256:2efaf6f8ad77da7c7833d7eaca1b98adcaddb8af75ac939cb151c389ab7b4472                                                                               2.1s
+ => => extracting sha256:56fad480e018beeb928505d07b558c8da2a24e15dc0ee09bf5245f679409cddb                                                                               0.1s
+ => => extracting sha256:1ae9f8b6657d61fb9fa6b8995e315b6e5d38e3740d183a25d093d5701ebf1adb                                                                               0.0s
+ => [internal] load build context                                                                                                                                       0.1s
+ => => transferring context: 48.46kB                                                                                                                                    0.0s
+ => [2/5] WORKDIR /app                                                                                                                                                  0.5s
+ => [3/5] COPY package*.json ./                                                                                                                                         0.1s
+ => [4/5] RUN npm install                                                                                                                                               2.1s
+ => [5/5] COPY . .                                                                                                                                                      0.1s 
+ => exporting to image                                                                                                                                                  1.1s 
+ => => exporting layers                                                                                                                                                 0.5s 
+ => => exporting manifest sha256:51489606a030c3003109cafbd148e19cd9c8b0546c05d73d5de951d5cfbbe9d9                                                                       0.0s
+ => => exporting config sha256:001081b9fa3999c585dab82dd5119922e2c2a814b90e47634eb9e3d9e212b55d                                                                         0.0s
+ => => exporting attestation manifest sha256:de76e6d651f6c6a545b51649ec5beefb53fc5ae7734f10d773a9df145fa314cd                                                           0.0s
+ => => exporting manifest list sha256:c62ccc97798c5281cd2ac07451036123601b5eb36e54e270aff330504dd78746                                                                  0.0s
+ => => naming to docker.io/library/myweb:latest                                                                                                                         0.0s
+ => => unpacking to docker.io/library/myweb:latest                                                                                                                      0.4s                                                                                            0.4s
 ```
 
-Now, I will check the existing images on my repository:
+Now, you will check the existing images on your repository:
 
 ```shell
-...:~/Projects/docker-projects/getting-started$ docker images
-REPOSITORY   TAG       IMAGE ID       CREATED         SIZE
-myweb        latest    d3dccbe289a0   6 minutes ago   249MB
-ubuntu       latest    1e622c5f073b   6 days ago      117MB
+...:~/.../simple-website$ docker images
+REPOSITORY   TAG       IMAGE ID       CREATED              SIZE
+myweb        latest    c62ccc97798c   About a minute ago   1.64GB
+mongo        latest    9f67b6bafda0   2 weeks ago          1.19GB
+ubuntu       latest    6015f66923d7   2 weeks ago          117MB
 ```
 
-You will see my repository containing the image `myweb` with `latest` tag, I will build it to container:
+You will see your repository containing the image `myweb` with `latest` tag, your will build it to container:
 
 ```shell
-...:~/Projects/docker-projects/getting-started$ docker run -d --name myweb -p 3000:3000 myweb
-99b748d812a27066c4118a5b032a72675b51943e0f273fbc942ebba2e8e93b36
-...:~/Projects/docker-projects/getting-started$ docker ps -a
-CONTAINER ID   IMAGE     COMMAND                  CREATED              STATUS              PORTS                    NAMES
-99b748d812a2   myweb     "docker-entrypoint.s…"   About a minute ago   Up About a minute   0.0.0.0:3000->3000/tcp   myweb
+...:~/.../simple-website$ docker run -d --name myweb -p 3001:3001 myweb:latest
+5fef83c2b97eb402a4d4ae018519c7c90efced5642e5094540e0a8eb98c2af76
+...:~/.../simple-website$ docker ps -a
+CONTAINER ID   IMAGE           COMMAND                  CREATED         STATUS                      PORTS                    NAMES
+5fef83c2b97e   myweb:latest    "docker-entrypoint.s…"   8 seconds ago   Up 7 seconds                0.0.0.0:3001->3001/tcp   myweb
 ```
 
-Now I will access the [http://localhost:3000](http://localhost:3000) and see my website.
+Now you will access the <http://localhost:3001> and see your website.
+
+List of main instructions in Dockerfile:
+
+| Command       | Short description                                                             |
+|---------------|-------------------------------------------------------------------------------|
+| `FROM`        | Defines the base image (required, always the first line - except `ARG`)       |
+| `ARG`         | Declare variables during **build** (can be used before `FROM`)                |
+| `ENV`         | Set environment variables in the container                                    |
+| `RUN`         | Run commands during image build                                               |
+| `CMD`         | Set default command when running container                                    |
+| `ENTRYPOINT`  | Set main command, not easily overwritten                                      |
+| `COPY`        | Copy files from host machine to image                                         |
+| `ADD`         | Same as `COPY` but with additional features (unzip, get URL)                  |
+| `WORKDIR`     | Set default working directory                                                 |
+| `EXPOSE`      | Declare the port the container will use (documentation, not open a real port) |
+| `VOLUME`      | Declare the directory to use as volume (for storage outside the container)    |
+| `LABEL`       | Add metadata to the image (key-value format)                                  |
+| `USER`        | Run commands as a different user (not root)                                   |
+| `ONBUILD`     | Directives to be run **when this image is used as a base image**              |
+| `SHELL`       | Change the default shell used by `RUN`, `CMD`, `ENTRYPOINT`                   |
+| `HEALTHCHECK` | Define how to check the "alive" status of the container                       |
+| `STOPSIGNAL`  | Set the signal when stopping the container (e.g. `SIGTERM`)                   |
+
+How to share your image with others, very simple. First you need to access the page <https://hub.docker.com/repositories>, then log in to your account, and then remember what your account username is. Then select **Create repository**, in here you name the repository as you like and click **Create**. After creating the repository, now go back to docker on your computer, first check if you have logged in or not with this command `docker login`, if you have successfully logged in, you will go to the step of pushing it to the Hub:
+
+The first step, you need to rename your image and tag according to the following syntax:
+
+```text
+<dockerhub-username>/<repository-name>:<tag>
+```
+
+The command to rename the image and tag is:
+
+```shell
+docker tag <old_image_name>:<old_tag> <new_image_name>:<new_tag>
+```
+
+Example
+
+```shell
+docker tag myweb:latest johndoe/my-app:latest
+```
+
+Step two is to push them to the Hub with the following command:
+
+```shell
+docker push johndoe/my-app:latest
+```
+
+> Note the name New image must follow the rule `<dockerhub-username>/<repository-name>:<tag>`
+
+Once you've pushed, you can go to Docker Hub and see the results, and later you or someone else can retrieve it using `docker pull`.
 
 ----------------------
 
-## **11. Run multi-containers with Docker Compose**
+## **12. Run multi-containers with Docker Compose**
 
 In previous sections, you learned how to run a container from an existing image and how to build and run a custom image with a Dockerfile. However, that only runs one container; on a real project you need to detach our project to small services such as frontend service (or container), backend service, database service, ... so you have to use the running container command many times. Instead, Docker provides Docker Compose, that is the tools will help us run and manage multi-containers in union
 
 ----------------------
 
-## **12. Docker Swarm**
+## **13. Docker Swarm**
 
 ----------------------
 

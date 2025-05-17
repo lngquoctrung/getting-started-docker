@@ -1,3 +1,5 @@
 product-management/node_modules
 product-management/.env
+simple-website/node_modules
+simple-website/.env
 .idea
