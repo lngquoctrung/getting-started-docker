@@ -1250,11 +1250,208 @@ Once you've pushed, you can go to Docker Hub and see the results, and later you 
 
 ## **12. Run multi-containers with Docker Compose**
 
-In previous sections, you learned how to run a container from an existing image and how to build and run a custom image with a Dockerfile. However, that only runs one container; on a real project you need to detach our project to small services such as frontend service (or container), backend service, database service, ... so you have to use the running container command many times. Instead, Docker provides Docker Compose, that is the tools will help us run and manage multi-containers in union
+In the previous sections, you learned how to run a container from an existing image and how to build and run a custom image with Dockerfile. However, that only runs one container; on a real project, you need to split your project into small services such as frontend service (or container), backend service, database service, ... so you have to use the run container command multiple times. To overcome this, Docker has provided us with a tool called **Docker Compose**.
+
+**Docker Compose** is a tool used to define and manage multiple containers (multi-container applications) through a single YAML configuration file, often called `docker-compose.yml`. It simplifies running, connecting, managing containers related to a particular application in a development or testing environment.
+
+Docker Compose lets you describe your entire application architecture (containers, networks, volumes, environment variables, etc.) in a single YAML file. Instead of running multiple complex `docker run` commands, you can run just one command like `docker compose up` to start all your containers. Docker Compose automatically handles network creation, container linking, port mapping, and volume management based on configuration.
+
+A `docker-compose.yml` file typically includes the following main components:
+
+- **Services**: Defines containers and their configuration, such as dockerfile, image, port, variables, environment, volume, network, etc.
+- **Networks** Configures networks for containers to communicate with each other.
+- **Volumes**: Manages volumes for persistent data storage.
+
+Here is an example `docker-compose.yml` file:
+
+```yaml
+# The information of all services
+services:
+  # The first service
+  web-app:                                    # The service name
+    container_name: web-app-container         # Use to set the container name
+    image: web-app-image:latest               # Use to set the image name
+    build:
+      context: .                              # The directory contains Dockerfile (. is current directory)
+      dockerfile: Dockerfile                  # The name of Dockerfile file
+    ports:                                    
+      - "3000:3000"                           # Mapping the port 3000 of the host to port 3000 of local container
+    restart: always                           # Restart container when it fails
+    healthcheck:                              # Use to check the status of container
+      # A test command is used to check the status of the container
+      # The shell is used to check, the below command use the CMD shell
+      # The next command is a command used to check status of the container, the below command use curl to check the status HTTP of the server
+      test: ["CMD", "curl", "-f", "http://0.0.0.0:3000/health-check"]
+      interval: 30s                           # This is the time between testing, we set 30 seconds will recheck
+      retries: 3                              # The number of retries when the previous test is fail
+      start_period: 10s                       # The waiting time that Docker will wait to restart container
+      timeout: 5s                             # The maximum time that Docker waits to receive a response from previous test to evaluate this as a failure
+    depends_on:
+      - db                                    # Start after the db service stared
+    networks:
+      - app-net                               # Use local network
+    environment:
+      - DB_URL=mongodb://db:27017/my-db       # The environmental variables
+      - PORT=${PORT}                          # Read environmental variable from .env file
+
+  # The second service
+  nginx:                                      # The service name
+    image: nginx:1.27.4                       # The image is pulled from Docker Hub
+    ports:
+      - "80:80"                               # Mapping port
+    volumes:
+      - nginx-data:/usr/share/nginx/html
+
+  # The third service
+  db:                                         # The service name
+    image: mongo:latest                       # The base image
+    ports:
+      - "27017:27017"                         # Map port
+    volumes:
+      - ./db-data:/data/db                      # Configure volume to store persistent data
+    environment:
+      - MONGO_INITDB_DATABASE=my-db           # The environmental variables
+
+networks:                                     # Create a local network (Containers in the same local network can communicate with each other)
+  app-net:                                    # The name of local network
+    driver: bridge                            # The driver of network (bride use in Docker Compose)
+
+volumes:
+  nginx-data:
+```
+
+Explanation:
+
+- In Docker Compose, the keywords `services`, `network`, ... are called **top-level keys**, the keywords `image`, `container_name`, `build`, `ports`, are called **configuration options**.
+
+- All services or containers that you want to define must be placed in the top-level key `services`, the code above includes 3 containers inside. Each container must declare a **service name**, the service name can be different from the image name or container name, but **they must be unique, the service name cannot be duplicated**, because they act as identifiers for each container, for example above we have 3 services with names respectively `web-app`, `nginx`, `db`.
+
+- In the first service, there are configuration options `container_name` and `image`, these are the name of the image and the name of the container after running successfully. If you do not name `image`, Docker will take the default name `[folder_name]_[service_name]`, `folder_name` here is the name of the folder containing the `docker-compose.yml` file, for example, if you name the folder containing the `docker-compose.yml` file `myapp`, when building the image, it will be named `myapp_[service_name]`, and for `container_name`, Docker will take the default name `[folder_name]_[service_name]_[order_number]`, for example `myapp_[service_name]_1`. **Important note** is that if you name the image and container name, you will not be able to use the command `docker compose up --scale <service_name>=<quantity>`.
+
+- In the first container, you will build it from a Dockerfile so you need to declare `context` and `dockerfile`, `context` is the folder containing the Dockerfile file and `dockerfile` is the name of the Dockerfile file. As for the 2nd and 3rd containers, they will run on an existing image so you only need to declare the `image` configuration option and the name of the base image. If you want that container to communicate externally, you can use the `ports` configuration option to map the port.
+
+- In order for these containers to communicate with each other, you need to create a network so that these containers are in the same network, and to create a network you can use the top level key `networks`, inside this key you can define as many networks as you want, each network will have `network_name` and the driver type of this network, this has been mentioned in [section 9](#9-containers-communicate-with-each-other-via-docker-network). After declaring the network, you go back to the containers and if you want the containers to share the same network, use the `networks` configuration option and declare the network name you want to use. However, **an important note is that these containers will communicate with each other through the service name instead of the IP address**, so if your website uses a database, when declaring the database URL you can replace the IP address with the service name.
+
+- If you want to store data persistently, you can use the `volumes` configuration option and declare the path or name of the volume you created inside the top level key `volumes`, for volumes created in the `volumes` key, you just need to declare the volume name, and then you set the volume using the `volumes` configuration option inside each container.
+
+- For environment variables, you can set them in the `environment` configuration option, more specifically, you can read them from the `.env` file. The special way to read from the `.env` file is to create a `.env` file in the same directory as the `docker-compose.yml` file and read it as `<variable_name>=${<variable_name_in_env_file>}`, to read this environment variable, you don't need to put the `.env` file into the container, because this reading will happen before building the image and running the container.
+
+- In addition, we have a few configuration options such as `restart`, `heathcheck` and `depends_on`. `restart` is the configuration that you will configure to automatically restore the container if an error occurs that causes the container to crash. `healthcheck` is a configuration option that helps you check the health of the container through configuration options such as `interval=<time>` which will send a request to the container after the time period you configure, `test` is the command you use to check the health of the container, the example above is a Node.js website with the route /health-check, so you can use a command like `curl` with `CMD`, `retries` is the number of rechecks before being judged as a failed container, `start_period` is the period of time that Docker will wait to restore the container, `timeout` is the maximum waiting time for a check. `depends_on` is a configuration option used to declare that this container will start after a container has successfully started.
+
+Docker Compose has a lot of features to help you run multiple containers. First, it simplifies configuration instead of having to run many commands like creating network, creating volume, running container with many flags, you only need one YAML file that will replace many complex Docker commands. Second, it will automatically create network, this will help containers in the same `docker-compose.yml` can communicate via service name (internal DNS). Third, Docker Compose helps you manage the lifecycle easily because if you just run a normal container, you need to `run`, `stop`, `rm`, ..., for Docker Compose you just need `docker-compose up` to start containers at the same time, and `docker-compose down` to stop all containers, or you can also scale the number of containers by using `scale` (note that for Docker Compose version 3 and below, you can use the `scale` configuration option in the `docker-compose.yml` file, and from version 3 and above, you must scale with the command `docker-compose up --scale <service_name>=<quantity>`). Fourth, support environment variables through the `.env` file by `<variable_name>=${<variable_name_in_env_file>}`. Next, automatic volume and network integration, it will automatically create and manage volumes, networks according to configuration. Finally, it is suitable for running local applications with dependent services (web, database, cache, etc.).
+
+Popular commands of Docker Compose:
+```shell
+# Start all services running on background (-d is --detach)
+docker-compose up -d 
+
+# In case you have uploaded before but want to update the new code
+docker-compose up --build -d
+
+# Stop and remove all service
+docker-compose down
+
+# Display the list of running service
+docker-compose ps
+
+# Display log of a service
+docker-compose logs
+
+# Extend the number of container
+docker-compose up --scale web=3
+```
+
+You should only use Docker Compose for a few cases:
+
+- **Local development**: Run the entire application (web, API, database) on your local machine.
+- **Testing**: Create a production-like test environment.
+- Microservices applications: Manage multiple related services in a project.
+- **CI/CD**: Use in a pipeline for testing or temporary deployment.
+
+> Note: Docker Compose is primarily used for development/testing. In production, tools like Docker Swarm or Kubernetes are often preferred for managing container clusters.
+
+And now we will proceed with the example project `product-management`:
+
+```yaml
+services:
+  product-management-web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    networks:
+      - product-management-network
+    depends_on:
+      - product-management-db
+    environment:
+      - .env
+      - DB_HOST=product-management-db
+
+  product-management-db:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./data-db:/data/db
+    networks:
+      - product-management-network
+    environment:
+      - MONGO_INITDB_DATABASE=technology_shop
+
+networks:
+  product-management-network:
+    driver: bridge
+```
+
+Now, run it.
+
+```shell
+...:~/.../getting-started$ cd product-management/
+...:~/.../getting-started/product-management$ docker compose up -d
+[+] Running 1/1
+ ✔ product-management-db Pulled                                                                                                                                                                    6.4s 
+Compose can now delegate builds to bake for better performance.
+ To do so, set COMPOSE_BAKE=true.
+[+] Building 3.8s (12/12) FINISHED                                                                                                                                                 docker:desktop-linux
+ => [product-management-web internal] load build definition from Dockerfile                                                                                                                        0.0s
+ => => transferring dockerfile: 709B                                                                                                                                                               0.0s
+ => [product-management-web internal] load metadata for docker.io/library/node:current-alpine3.20                                                                                                  2.7s
+ => [product-management-web auth] library/node:pull token for registry-1.docker.io                                                                                                                 0.0s
+ => [product-management-web internal] load .dockerignore                                                                                                                                           0.0s
+ => => transferring context: 57B                                                                                                                                                                   0.0s
+ => [product-management-web 1/5] FROM docker.io/library/node:current-alpine3.20@sha256:a27ee4f6c7e3c7c40cd05622ef34fc2975aa81dd719ff6fddf7a2df15d4613e8                                            0.0s
+ => => resolve docker.io/library/node:current-alpine3.20@sha256:a27ee4f6c7e3c7c40cd05622ef34fc2975aa81dd719ff6fddf7a2df15d4613e8                                                                   0.0s
+ => [product-management-web internal] load build context                                                                                                                                           0.0s
+ => => transferring context: 2.82kB                                                                                                                                                                0.0s
+ => CACHED [product-management-web 2/5] WORKDIR /app                                                                                                                                               0.0s
+ => CACHED [product-management-web 3/5] COPY package*.json ./                                                                                                                                      0.0s
+ => CACHED [product-management-web 4/5] RUN npm install                                                                                                                                            0.0s
+ => [product-management-web 5/5] COPY . .                                                                                                                                                          0.0s
+ => [product-management-web] exporting to image                                                                                                                                                    0.9s
+ => => exporting layers                                                                                                                                                                            0.1s
+ => => exporting manifest sha256:9666fe4bf0cf0365b8e719ff75d05ad6a583047c38540f783eb634344c818c53                                                                                                  0.0s
+ => => exporting config sha256:e58d5c1791678047a264b11e5ce9f42fdcfa2c027a947285b05d2db384daebb3                                                                                                    0.0s
+ => => exporting attestation manifest sha256:d266bb2ada489ab9635cb4be250a72f576b9339cb0518ee8462f81a4c32abed8                                                                                      0.0s
+ => => exporting manifest list sha256:7af50b85554fc2c9643d8dce598f404421dd83f32381e05cdc89ae662cbde41b                                                                                             0.0s
+ => => naming to docker.io/library/product-management-product-management-web:latest                                                                                                                0.0s
+ => => unpacking to docker.io/library/product-management-product-management-web:latest                                                                                                             0.7s
+ => [product-management-web] resolving provenance for metadata file                                                                                                                                0.0s
+[+] Running 4/4
+ ✔ product-management-web                                 Built                                                                                                                                    0.0s 
+ ✔ Network product-management_product-management-network  Created                                                                                                                                  0.0s 
+ ✔ Container product-management-product-management-db-1   Started                                                                                                                                  0.4s 
+ ✔ Container product-management-product-management-web-1  Started                                                                                                                                  0.4s 
+...:~/.../getting-started/product-management$ 
+```
+
+Open browser and access <http://0.0.0.0:3000> to see the result.
 
 ----------------------
 
 ## **13. Docker Swarm**
+
+Updating...
 
 ----------------------
 

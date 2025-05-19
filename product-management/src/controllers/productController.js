@@ -2,7 +2,7 @@ const productHelper = require("../helpers/productHelper");
 
 const createProduct = async (req, res) => {
     const serverURL = `http://${process.env.HOST}:${process.env.PORT}`;
-    const productImage = `${serverURL}/${req.file.path}`;
+    const productImage = `${serverURL}/public/${req.file.filename}`;
     try {
         const newProduct = await productHelper.createProduct({
             productImage,
