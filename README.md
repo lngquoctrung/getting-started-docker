@@ -20,19 +20,19 @@
 
 ## **1. What is Docker?**
 
-**Docker** is an open source platform used to automatically deploy, maintain, manage, and run applications in containers. **A container** is a lightweight, independence init that contains resources, libraries, and necessary dependencies for an application to run in any environments, from personal computers to cloud systems.
+**Docker** is an open source platform used to automatically deploy, maintain, manage, and run applications in containers. **A container** is a lightweight, independence init that contains resources, libraries, and necessary dependencies for an application to run in any environments across various environments, such as local machines or cloud platforms, from personal computers to cloud systems.
 
 ----------------------
 
 ## **2. Benefits of Docker**
 
-1. **Containerization**: This is different from **the traditional virtual machine (VMs)**, Docker uses the containers to package their applications and running environments. The containers share kernel of the host operating systems, which helps them to be lighter and restart faster with VMs.
+1. **Containerization**: This is different from **the traditional virtual machine (VMs)**, Docker uses the containers to package their applications and running environments. The containers share kernel of the host operating systems, making them lighter and faster to restart than VMs.
 
 2. **Portability**: The applications run in the containers which can work uniformly in the different environments (Example: development, test, or production environments)
 
 3. **Resource efficiency**: The containers are lighter than VMs because they share the host's OS kernel, they don't need to carry the entire operating system like VMs.
 
-4. **Isolation**: Each container runs independently, without effecting each other. This makes sure that applications or services do not conflict about dependencies, software versions, or configurations.
+4. **Isolation**: Each container runs independently, without affecting each other. This makes sure that applications or services do not conflict about dependencies, software versions, or configurations.
 
 5. **Scalability**: Docker supports easy scaling, especially when combined with tools like **Docker Swarm** or **Kubernetes**. You can replicate containers to handle advanced load balancing.
 
@@ -40,23 +40,16 @@
 
 ## **3. Terms in Docker**
 
-1. **Container**: An application init is independent, slight, which contains the applications and every necessary thing to run itself such as resources, libraries, configurations, dependencies.
-
+1. **Container**: An application unit is independent, lightweight, which contains the applications and every necessary thing to run itself such as resources, libraries, configurations, dependencies.
 2. **Image**: A read-only template contains instructions for creating containers. An image is like a _"blueprint"_ for a container.
-
-3. **Dockerfile**: A text file contains commands to build a Docker image. It defines how to install software, copy files, and setup environment configurations.
-
+3. **Dockerfile**: A Dockerfile is a text file with commands to build a Docker image, defining software installation, file copying, and environment setup.
 4. **Docker Engine**: Docker's core is responsible for creating, running, and managing containers. It includes the **Daemon server** and **Command Line Interface (CLI)**.
-
 5. **Docker Hub**: Cloud storage or repository stores and shares Docker's images. We can download image from there such as nginx, rabbitmq, ... or push our images.
-
 6. **Repository**: Repository stores our images with many versions (It is distinguished by **tags**. For example: `nginx:latest` that is the latest version of Nginx in repository `nginx` or `nginx:1.27.4`).
-
 7. **Volume**: This is a persistent data storage mechanism in Docker. Volumes allow data to persist beyond the life of the container, avoiding data loss when the container is deleted.
-
 8. **Network**: A network system in Docker allows containers to communicate with each other or with the outside world. Docker networks include types such as `bridge`, `host`, `overaly`.
-
 9. **Docker Compose**: A template define, create and run multi-container applications at the same time using the `docker-compose.yml` file. We usually use it for building multiple containers or multiple services.
+10. **Registry**: A registry, like Docker Hub, stores and distributes Docker images.
 
 ----------------------
 
@@ -77,13 +70,13 @@ docker run -d --name nginx -p 80:80 nginx:latest
 
 The above command includes components:
 
-- `docker run`: A Docker command uses to create and run a new container from a Docker image. If the image does not exist in the local repository, Docker will find it on Docker Hub and pull the image to your Docker repository. It replaces for the command `docker pull nginx:latest`.
+- `docker run`: A Docker command uses to create and run a new container from a Docker image. If the image does not exist in the local repository, Docker will find it on Docker Hub and pull the image to your Docker repository.
 - `-d`: Shorthand for `--detached`, this flag allows the container to run in the background, which means the container won't display logs and take over the terminal window.
 - `--name nginx`: A flag uses to set the container's name, when you run a container without the flag `--name`, Docker will generate a random name for the container and Docker uses it as unique identification for each container. The container name is unique.
 - `-p 80:80`: A shorthand for `--port`, the flag uses to map ports between the host and the container. The parameter includes two parts, the first part (before the `:`) is the port on the host and the second part (after the `:`) is the port on the container. This flag will map port `80` on the host with the port `80` on the container, which will allow the host can access the Nginx through the port `80`. You can change the first part with another port, but the second part must be `80` because this is the default configurations of Nginx.
 - `nginx:latest`: These are the image name and tag, Docker will use it to create container. `nginx` is image name, and `latest` is image tag. Docker will pull the latest version of the Nginx image and use it to create a container.
 
-After running the above command, you will see the following result in the terminal, meaning you successfully run a container. To check it, you open the browser and access [http://localhost](http://localhost) (you don's need to write port 80 because it is the default port of any OS). If you see the **Welcome to nginx** page, you really successfully run a Nginx container.
+After running the above command, you will see the following result in the terminal, meaning you successfully run a container. To check it, you open the browser and access [http://localhost](http://localhost) (you don't need to write port 80 because it is the default port of any OS). If you see the **Welcome to nginx** page, you really successfully run a Nginx container.
 
 ```shell
 ...:~$ docker run -d --name nginx -p 80:80 nginx:latest
@@ -1188,25 +1181,25 @@ Now you will access the <http://localhost:3001> and see your website.
 
 List of main instructions in Dockerfile:
 
-| Command       | Short description                                                             |
-|---------------|-------------------------------------------------------------------------------|
-| `FROM`        | Defines the base image (required, always the first line - except `ARG`)       |
-| `ARG`         | Declare variables during **build** (can be used before `FROM`)                |
-| `ENV`         | Set environment variables in the container                                    |
-| `RUN`         | Run commands during image build                                               |
-| `CMD`         | Set default command when running container                                    |
-| `ENTRYPOINT`  | Set main command, not easily overwritten                                      |
-| `COPY`        | Copy files from host machine to image                                         |
-| `ADD`         | Same as `COPY` but with additional features (unzip, get URL)                  |
-| `WORKDIR`     | Set default working directory                                                 |
-| `EXPOSE`      | Declare the port the container will use (documentation, not open a real port) |
-| `VOLUME`      | Declare the directory to use as volume (for storage outside the container)    |
-| `LABEL`       | Add metadata to the image (key-value format)                                  |
-| `USER`        | Run commands as a different user (not root)                                   |
-| `ONBUILD`     | Directives to be run **when this image is used as a base image**              |
-| `SHELL`       | Change the default shell used by `RUN`, `CMD`, `ENTRYPOINT`                   |
-| `HEALTHCHECK` | Define how to check the "alive" status of the container                       |
-| `STOPSIGNAL`  | Set the signal when stopping the container (e.g. `SIGTERM`)                   |
+| Command       | Short description                                                              |
+|---------------|--------------------------------------------------------------------------------|
+| `FROM`        | Defines the base image (required, always the first line - except `ARG`)        |
+| `ARG`         | Declare variables during **build** (can be used before `FROM`)                 |
+| `ENV`         | Set environment variables in the container, avoiding sensitive `ENV` variables |
+| `RUN`         | Run commands during image build                                                |
+| `CMD`         | Set default command when running container                                     |
+| `ENTRYPOINT`  | Set main command, not easily overwritten                                       |
+| `COPY`        | Copy files from host machine to image                                          |
+| `ADD`         | Same as `COPY` but with additional features (unzip, get URL)                   |
+| `WORKDIR`     | Set default working directory                                                  |
+| `EXPOSE`      | Declare the port the container will use (documentation, not open a real port)  |
+| `VOLUME`      | Declare the directory to use as volume (for storage outside the container)     |
+| `LABEL`       | Add metadata to the image (key-value format)                                   |
+| `USER`        | Run commands as a different user (not root)                                    |
+| `ONBUILD`     | Directives to be run **when this image is used as a base image**               |
+| `SHELL`       | Change the default shell used by `RUN`, `CMD`, `ENTRYPOINT`                    |
+| `HEALTHCHECK` | Define how to check the "alive" status of the container                        |
+| `STOPSIGNAL`  | Set the signal when stopping the container (e.g. `SIGTERM`)                    |
 
 ### **11.2 How to share your image with Docker Hub**
 
@@ -1374,34 +1367,40 @@ And now we will proceed with the example project `product-management`:
 
 ```yaml
 services:
-  product-management-web:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - "3000:3000"
-    networks:
-      - product-management-network
-    depends_on:
-      - product-management-db
-    environment:
-      - .env
-      - DB_HOST=product-management-db
+   product-management-web:
+      build:
+         context: .
+         dockerfile: Dockerfile
+      ports:
+         - "3000:3000"
+      networks:
+         - product-management-network
+      depends_on:
+         - product-management-db
+      environment:
+         - HOST=${HOST}
+         - PORT=${PORT}
+         - NODE_ENV=${NODE_ENV}
+         - DB_HOST=product-management-db
+         - DB_PORT=${DB_PORT}
+         - DB_NAME=${DB_NAME}
+         - SESSION_KEY=${SESSION_KEY}
+         - JWT_SECRET=${JWT_SECRET}
 
-  product-management-db:
-    image: mongo:latest
-    ports:
-      - "27017:27017"
-    volumes:
-      - ./data-db:/data/db
-    networks:
-      - product-management-network
-    environment:
-      - MONGO_INITDB_DATABASE=technology_shop
+   product-management-db:
+      image: mongo:latest
+      ports:
+         - "27017:27017"
+      volumes:
+         - ./data-db:/data/db
+      networks:
+         - product-management-network
+      environment:
+         - MONGO_INITDB_DATABASE=technology_shop
 
 networks:
-  product-management-network:
-    driver: bridge
+   product-management-network:
+      driver: bridge
 ```
 
 Now, run it.
